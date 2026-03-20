@@ -54,38 +54,35 @@ class StickyView(discord.ui.View):
 async def sticky_timer(channel):
     channel_id = str(channel.id)
 
-    while True:
-        await asyncio.sleep(60)
+    await asyncio.sleep(60)
 
-        data = sticky_data.get(channel_id)
-        if not data:
-            return
+    data = sticky_data.get(channel_id)
+    if not data:
+        return
 
-        now = asyncio.get_event_loop().time()
+    # 🛑 ONLY send if THIS is still the latest timer
+    if timer_tasks.get(channel_id) != asyncio.current_task():
+        return
 
-        if now - data["last_message_time"] >= 60:
-            try:
-                if data.get("message_id"):
-                    old_msg = await channel.fetch_message(data["message_id"])
-                    await old_msg.delete()
-            except:
-                pass
+    now = asyncio.get_event_loop().time()
 
-            embed = discord.Embed(
-                title="📌 Sticky Message",
-                description=data["text"],
-                color=discord.Color.blue()
-            )
+    if now - data["last_message_time"] >= 60:
+        try:
+            if data.get("message_id"):
+                old_msg = await channel.fetch_message(data["message_id"])
+                await old_msg.delete()
+        except:
+            pass
 
-            view = StickyView(channel.id)
+        embed = discord.Embed(
+            title="📌 Sticky Message",
+            description=data["text"],
+            color=discord.Color.blue()
+        )
 
-            msg = await channel.send(embed=embed, view=view)
-            sticky_data[channel_id]["message_id"] = msg.id
-            save_data()
-
-        else:
-            continue
-
+        msg = await channel.send(embed=embed)
+        sticky_data[channel_id]["message_id"] = msg.id
+        save_data()
 # ---------- EVENTS ---------- #
 
 @bot.event
