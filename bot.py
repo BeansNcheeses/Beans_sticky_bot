@@ -3,8 +3,8 @@ from discord.ext import commands
 from discord import app_commands
 import asyncio
 import json
-
-TOKEN = "MTQ4NDQzNzQ5MzgyMTQ3Njk0Ng.G8SBPR.QykKkS03nokaCfdCKboXtYdZsDhMILmSO_UgiE"
+import os
+TOKEN = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True
